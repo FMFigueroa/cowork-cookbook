@@ -297,6 +297,8 @@ Si el server necesita secrets (API keys, tokens), se pasan vía `env`:
 }
 ```
 
+> 🛡️ **Secrets en producción.** Meter tokens directo en el JSON es cómodo para probar, pero es un anti-patrón: queda en plaintext, lo leen agentes de IA que acceden al archivo, y rotarlo es fricción. Para uso real, seguí el patrón [MCP Secrets Management](../01-patterns/mcp-secrets-management.md) — wrapper script + archivo `.env` con permisos restrictivos.
+
 #### Dónde viven físicamente
 
 No se instalan como tal — se **descargan on-demand** desde npm al cache de tu Mac:
