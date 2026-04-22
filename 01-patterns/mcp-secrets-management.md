@@ -453,5 +453,5 @@ Ventaja: el secret nunca toca el filesystem en plaintext.
 
 ## 🔗 Referencias
 
-- [LocalDev en el ecosistema MCP](../00-foundations/01-how-cowork-works.md#️-localdev--el-mcp-server-que-declaras-tú) — contexto de foundations
+- [LocalDev en el ecosistema MCP](../00-foundations/03-customize/02-conectores.md#️-localdev--el-mcp-server-que-declaras-tú) — contexto de foundations
 - [MCP Specification](https://spec.modelcontextprotocol.io/) — protocolo oficial de Anthropic
