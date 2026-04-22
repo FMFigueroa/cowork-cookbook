@@ -80,7 +80,7 @@ Tres capas que separan las responsabilidades:
                   ▼
 ┌─────────────────────────────────────────────────────────┐
 │  ~/.local/bin/mcp-<X>-wrapper.sh                        │
-│  ├─ source ~/.mcp-secrets.env                           │  ← carga secrets
+│  ├─ source ~/.mcp/secrets.env                           │  ← carga secrets
 │  ├─ export <VAR>="$TOKEN_DEL_ENV"                       │  ← mapea al nombre correcto
 │  └─ exec npx -y @provider/mcp-server                    │  ← arranca el server
 └─────────────────┬───────────────────────────────────────┘
@@ -103,7 +103,8 @@ Tres capas que separan las responsabilidades:
 
 ```
 ~/
-├── .mcp-secrets.env                              ← secrets (chmod 600)
+├── .mcp/                                         ← carpeta dedicada a MCP (chmod 700)
+│   └── secrets.env                               ← secrets (chmod 600)
 │
 ├── .local/bin/
 │   ├── mcp-github-wrapper.sh                     ← wrapper (chmod 755)
@@ -114,6 +115,8 @@ Tres capas que separan las responsabilidades:
     ├── claude_desktop_config.json                ← apunta a los wrappers
     └── claude_desktop_config.json.backup-YYYY-MM-DD  ← backup antes del cambio
 ```
+
+> 💡 **Por qué `~/.mcp/` y no `~/.mcp-secrets.env`** — MCP es un protocolo agnóstico al cliente (Claude Desktop, Cursor, Zed, futuros clientes). Una carpeta dedicada sigue la convención Unix (`~/.ssh/`, `~/.aws/`, `~/.gnupg/`) y deja espacio para futuros archivos compartidos (ej: `~/.mcp/trusted-hosts.yaml`).
 
 ---
 
@@ -128,12 +131,12 @@ cp "$HOME/Library/Application Support/Claude/claude_desktop_config.json" \
    "$HOME/Library/Application Support/Claude/claude_desktop_config.json.backup-$(date +%Y-%m-%d)"
 ```
 
-### 2. Crear `~/.mcp-secrets.env`
+### 2. Crear `~/.mcp/secrets.env`
 
 Con **placeholders**, nunca con valores reales pegados desde chat. El archivo se edita directamente en tu IDE.
 
 ```bash
-# ~/.mcp-secrets.env
+# ~/.mcp/secrets.env
 #
 # ⚠️  NUNCA committear este archivo ni pegar su contenido en chat.
 # ⚠️  Editar directamente desde tu IDE.
@@ -151,7 +154,7 @@ export ANOTHER_API_KEY="PEGA_TU_KEY_AQUI"
 Permisos restrictivos (solo tu usuario puede leer):
 
 ```bash
-chmod 600 ~/.mcp-secrets.env
+chmod 600 ~/.mcp/secrets.env
 ```
 
 ### 3. Crear el wrapper
@@ -171,11 +174,11 @@ set -euo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 
 # Cargar secrets
-if [[ ! -f "$HOME/.mcp-secrets.env" ]]; then
-  echo "Error: $HOME/.mcp-secrets.env no existe" >&2
+if [[ ! -f "$HOME/.mcp/secrets.env" ]]; then
+  echo "Error: $HOME/.mcp/secrets.env no existe" >&2
   exit 1
 fi
-source "$HOME/.mcp-secrets.env"
+source "$HOME/.mcp/secrets.env"
 
 # Mapear al nombre de env var que espera el MCP server
 export GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_PAT_MAIN"
@@ -220,7 +223,7 @@ Reemplazar la entrada del MCP server para apuntar al wrapper:
 
 ### 5. Pegar los tokens reales y reiniciar
 
-1. Abre `~/.mcp-secrets.env` en tu IDE
+1. Abre `~/.mcp/secrets.env` en tu IDE
 2. Reemplaza los `PEGA_TU_TOKEN_AQUI_*` por los valores reales
 3. Guarda el archivo
 4. Reinicia Claude Desktop (Cmd+Q → volver a abrir)
@@ -240,7 +243,7 @@ Rotar un token ahora es un proceso limpio y reproducible:
 2. Generar un token nuevo
          │
          ▼
-3. Abrir ~/.mcp-secrets.env en el IDE
+3. Abrir ~/.mcp/secrets.env en el IDE
    y pegar el nuevo valor (sin pasarlo por chat)
          │
          ▼
@@ -250,7 +253,7 @@ Rotar un token ahora es un proceso limpio y reproducible:
 5. ✅ Rotación completa — claude_desktop_config.json intacto
 ```
 
-> 🛡️ **Nunca** pegues el token nuevo en una conversación con un LLM. Pégalo directamente en tu IDE, en el archivo `.mcp-secrets.env`.
+> 🛡️ **Nunca** pegues el token nuevo en una conversación con un LLM. Pégalo directamente en tu IDE, en el archivo `~/.mcp/secrets.env`.
 
 ---
 
@@ -271,12 +274,12 @@ Rotar un token ahora es un proceso limpio y reproducible:
 
 El archivo lo leen agentes de IA, lo sincronizan tools de backup, y rotar se vuelve fricción.
 
-### ❌ NO versiones `~/.mcp-secrets.env` en Git
+### ❌ NO versiones `~/.mcp/secrets.env` en Git
 
 Incluso en un repo privado. Si el repo se clona en otra máquina o se abre en un IDE con asistente, los secrets quedan en context. Agregar a `.gitignore` globalmente:
 
 ```bash
-echo ".mcp-secrets.env" >> ~/.gitignore_global
+echo ".mcp/" >> ~/.gitignore_global
 git config --global core.excludesfile ~/.gitignore_global
 ```
 
@@ -289,7 +292,7 @@ El wrapper debe **leer** del `.env`, nunca contener el token directamente:
 export GITHUB_PERSONAL_ACCESS_TOKEN="ghp_xxxx"
 
 # BIEN
-source "$HOME/.mcp-secrets.env"
+source "$HOME/.mcp/secrets.env"
 export GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_PAT_MAIN"
 ```
 
@@ -303,7 +306,7 @@ Aunque sea "solo para probar". Todo mensaje queda en el context de la conversaci
 
 ### Múltiples MCPs, un solo `.env`
 
-El archivo `~/.mcp-secrets.env` es compartido por todos los wrappers. Añadir un MCP nuevo con secrets:
+El archivo `~/.mcp/secrets.env` es compartido por todos los wrappers. Añadir un MCP nuevo con secrets:
 
 1. Agrega la variable al `.env` (ej: `export ANTHROPIC_API_KEY="..."`)
 2. Crea un nuevo wrapper `~/.local/bin/mcp-<nuevo>-wrapper.sh` que haga `source` del mismo `.env`
@@ -311,11 +314,11 @@ El archivo `~/.mcp-secrets.env` es compartido por todos los wrappers. Añadir un
 
 ### Secrets compartidos con otros tools
 
-Si querés que el mismo `.mcp-secrets.env` cargue en tu shell para uso fuera de Claude Desktop, agregá esto a `~/.zshrc`:
+Si querés que el mismo `~/.mcp/secrets.env` cargue en tu shell para uso fuera de Claude Desktop, agregá esto a `~/.zshrc`:
 
 ```bash
 # Carga secrets de MCP si el archivo existe
-[[ -f "$HOME/.mcp-secrets.env" ]] && source "$HOME/.mcp-secrets.env"
+[[ -f "$HOME/.mcp/secrets.env" ]] && source "$HOME/.mcp/secrets.env"
 ```
 
 Así las variables están disponibles también en tu terminal interactiva.
