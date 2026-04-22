@@ -15,7 +15,7 @@
 - [Skills](#-skills)
 - [Conectores](#-conectores)
 - [Plugins](#-plugins)
-- [Projects](#-projects)
+- [Projects](#-projects) → movido a [`02-projects.md`](./02-projects.md)
 
 ---
 
@@ -977,67 +977,15 @@ Plugin         = kit curado que combina Skills + Conectores + Subagents
 
 ## 📂 Projects
 
-Un **Project** es el contenedor que agrupa todo lo que Cowork necesita para trabajar en un dominio o iniciativa tuya. Es donde configuras cómo debe comportarse el agente y a qué información tiene acceso.
-
-### Anatomía de un Project
-
-Un Project se compone de **3 elementos fundamentales**:
-
-#### 1. Instructions
-
-Es el **system prompt** del Project. Aquí defines cómo debe comportarse Cowork para este Project específico: tono, restricciones, qué Skills invocar, cómo estructurar el output, dónde dejarlo. Es la capa donde haces referencia a los recursos globales (como los Skills y Conectores) que quieres que Cowork priorice para este Project.
-
-#### 2. Schedule
-
-La lista de **tareas planificadas** del Project. Cada tarea se configura con los siguientes campos (tal como aparecen en el diálogo _Create scheduled task_ de Cowork):
-
-| Campo                 | Qué es                                                                                                           |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Name**              | Identificador de la tarea (ej. `daily-briefing`)                                                                 |
-| **Description**       | Resumen en una línea de lo que hace                                                                              |
-| **Prompt**            | Las instrucciones completas que ejecutará la tarea                                                               |
-| **Work in a project** | El folder del Project donde corre la tarea (heredado del Project seleccionado, aparece como `from project`)      |
-| **Approval mode**     | `Ask for approvals` (default, pausa ante cada tool call) o `Skip all approvals` (ejecuta autónomo sin preguntar) |
-| **Model**             | El modelo de Claude (por defecto o específico por tarea)                                                         |
-| **Frequency**         | `Manual` (bajo demanda), `Hourly`, `Daily`, `Weekdays` (lunes a viernes) o `Weekly`                              |
-
-Cada tarea queda vinculada al Project y, por extensión, al directorio de tu máquina asociado a ese Project.
-
-> 🛡️ **Approval mode es una decisión de riesgo.** `Ask for approvals` te da control fino pero rompe la promesa de automatización (tienes que estar presente). `Skip all approvals` es el modo headless real — úsalo solo cuando confíes completamente en el prompt + contexto de la tarea.
-
-#### 3. Contexto
-
-La **información base** del Project. Los agentes **leen** este contexto pero **no lo modifican** — es read-only.
-
-El Contexto se alimenta de 3 fuentes externas + 1 memoria interna:
-
-| Fuente                  | Qué es                                                                            |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| **Carpeta local**       | Una carpeta en tu ordenador con los archivos base del Project                     |
-| **Links / URLs**        | Referencias a sitios web que aportan contexto                                     |
-| **Google Drive**        | Documentos en la nube                                                             |
-| **Memoria del Project** | Un espacio de memoria reservado donde el agente persiste información entre tareas |
-
-### El flujo completo
-
-```
-Instructions   (system prompt: cómo comportarse)
-    +
-Schedule       (cuándo: bajo demanda o recurrente)
-    +
-Contexto       (qué sabe: fuente de verdad read-only)
-    +
-User prompt    (la acción específica a ejecutar)
-    ↓
-Agentes orquestados trabajan en el entorno virtual
-    ↓
-Output escrito en la ubicación que definiste en Instructions
-```
-
-### Contexto ≠ Output
-
-**El contexto no se toca.** Cowork **lee** los archivos de contexto y solo **crea archivos nuevos** en la ubicación de salida que hayas especificado en las Instructions.
-
-Tus documentos base quedan intactos; el Project genera siempre outputs separados, sin riesgo de sobreescribir tu fuente de verdad.
+> 📖 **Esta sección se movió a su propio doc dedicado:** [**`02-projects.md`**](./02-projects.md).
+>
+> El Project es la **unidad fundamental donde vive y se ejecuta** el trabajo de Cowork. Por su peso conceptual y porque incluye también el **Task Loop** (cómo Cowork ejecuta cada tarea), se separó en un archivo propio para mantener este doc enfocado en los componentes del ecosistema (Customize, Skills, Conectores, Plugins).
+>
+> En `02-projects.md` encuentras:
+> - Qué es un Project y por qué Cowork se organiza así
+> - Anatomía (Instructions + Schedule/Tasks + Contexto)
+> - El Task Loop de 4 pasos
+> - Bajo el capó (5 pilares, subagentes, VM)
+> - Steering, mindset de revisión, walkthrough y tips de prompting
 
 ---

@@ -1,6 +1,6 @@
-# El Task Loop de Cowork
+# Projects en Cowork — donde vive y se ejecuta el trabajo
 
-> Documento vivo. Detalla cómo Cowork ejecuta cualquier tarea — el ciclo de alineamiento, ejecución y entrega.
+> Documento vivo. Detalla la unidad fundamental de Cowork — el Project — y cómo ejecuta el trabajo a través del Task Loop.
 
 **Última actualización:** 2026-04-22
 **Autor:** Felix M. Figueroa · [@FMFigueroa](https://github.com/FMFigueroa)
@@ -9,7 +9,11 @@
 
 ## 📋 Índice
 
-- [¿Qué es el Task Loop?](#-qué-es-el-task-loop)
+- [¿Qué es un Project?](#-qué-es-un-project)
+- [Anatomía de un Project](#️-anatomía-de-un-project)
+- [Flujo: cómo se ejecuta un Project](#-flujo-cómo-se-ejecuta-un-project)
+- [Contexto ≠ Output](#️-contexto--output)
+- [El Task Loop: cómo Cowork ejecuta cada tarea](#-el-task-loop-cómo-cowork-ejecuta-cada-tarea)
 - [Los 4 pasos del loop](#-los-4-pasos-del-loop)
 - [Bajo el capó: 5 pilares de ejecución](#-bajo-el-capó-5-pilares-de-ejecución)
 - [Steering: redirigir en tiempo real](#️-steering-redirigir-en-tiempo-real)
@@ -20,20 +24,134 @@
 
 ---
 
-## 💡 ¿Qué es el Task Loop?
+## 💡 ¿Qué es un Project?
 
-El **Task Loop** es el ciclo de 4 pasos que Cowork sigue para ejecutar cualquier tarea. Empieza cuando describes lo que necesitas y termina cuando el output final aterriza en tu filesystem.
+Un **Project** es la **unidad fundamental de Cowork**: el contenedor que agrupa todo lo que el agente necesita para trabajar en un dominio o iniciativa tuya. Es donde configuras cómo debe comportarse Cowork y a qué información tiene acceso.
 
-> 📖 **Del curso (Anthropic Academy):** "Claude proposes a plan and waits for your approval before taking action. You adjust if needed, approve, and Claude executes. This is the pattern for every Cowork task."
+**Cowork no trabaja sin un Project.** Todo lo que ejecuta — desde un briefing diario hasta un pipeline multi-agente — vive dentro de un Project.
 
 ### ¿Para qué sirve?
 
-- **Alineamiento antes de actuar** — Cowork no ejecuta a ciegas: pregunta lo que le falta, arma un plan y espera tu luz verde.
-- **Control del approach** — puedes ajustar la dirección antes de que arranque el trabajo real.
-- **Steering en vivo** — mientras Cowork ejecuta, puedes redirigirlo sin esperar a que termine.
-- **Output predecible** — el resultado llega donde lo pediste, en el formato que definiste.
+- **Agrupar el contexto** de una iniciativa en un solo lugar (archivos, links, memoria persistente).
+- **Definir cómo se comporta el agente** en ese dominio específico (tono, restricciones, qué Skills usar).
+- **Programar tareas** que corren bajo demanda o en cadencia (diarias, semanales, manuales).
+- **Aislar el trabajo** — los outputs de un Project no se mezclan con los de otro.
 
-### ¿Por qué existe como loop y no como ejecución directa?
+### ¿Por qué Cowork se organiza por Projects y no por tareas sueltas?
+
+Porque las tareas **rara vez son aisladas** — una investigación de mercado, un cierre financiero, la preparación de leadership briefs: todas involucran múltiples ejecuciones sobre el mismo pool de archivos y bajo las mismas reglas. Un Project te deja:
+
+- Configurar el contexto una sola vez y reutilizarlo en N tareas.
+- Evolucionar las Instructions sin re-explicarte cada vez que lanzas trabajo.
+- Mantener una memoria persistente entre ejecuciones.
+
+---
+
+## 🏗️ Anatomía de un Project
+
+Un Project se compone de **3 elementos fundamentales**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     📂 PROJECT                          │
+│                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │ Instructions │  │   Schedule   │  │   Contexto   │   │
+│  │              │  │  (las Tasks) │  │              │   │
+│  │ system       │  │              │  │ read-only    │   │
+│  │ prompt +     │  │ bajo demanda │  │ fuentes +    │   │
+│  │ recursos     │  │ o recurrente │  │ memoria      │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘   │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 1. Instructions
+
+Es el **system prompt** del Project. Aquí defines cómo debe comportarse Cowork para este Project específico:
+
+- Tono y estilo de comunicación.
+- Restricciones (qué no hacer, qué aprobaciones necesita).
+- Qué Skills priorizar cuando aplique.
+- Cómo estructurar los outputs.
+- Dónde dejar los resultados.
+
+Es la capa donde **haces referencia a los recursos globales** (Skills y Conectores) que quieres que Cowork priorice en este Project.
+
+### 2. Schedule — las Tasks del Project
+
+La lista de **tareas planificadas** del Project. Una Task es la unidad ejecutable: un prompt + configuración de cuándo y cómo corre.
+
+Cada tarea se configura con los campos del diálogo _Create scheduled task_ de Cowork:
+
+| Campo                 | Qué es                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Name**              | Identificador de la tarea (ej. `daily-briefing`)                                                                 |
+| **Description**       | Resumen en una línea de lo que hace                                                                              |
+| **Prompt**            | Las instrucciones completas que ejecutará la tarea                                                               |
+| **Work in a project** | El folder del Project donde corre la tarea (heredado del Project seleccionado, aparece como `from project`)      |
+| **Approval mode**     | `Ask for approvals` (default, pausa ante cada tool call) o `Skip all approvals` (ejecuta autónomo sin preguntar) |
+| **Model**             | El modelo de Claude (por defecto o específico por tarea)                                                         |
+| **Frequency**         | `Manual` (bajo demanda), `Hourly`, `Daily`, `Weekdays` (lunes a viernes) o `Weekly`                              |
+
+Cada tarea queda **vinculada al Project** y, por extensión, al directorio de tu máquina asociado a ese Project.
+
+> 🛡️ **Approval mode es una decisión de riesgo.** `Ask for approvals` te da control fino pero rompe la promesa de automatización (tienes que estar presente). `Skip all approvals` es el modo headless real — úsalo solo cuando confíes completamente en el prompt + contexto de la tarea.
+
+### 3. Contexto
+
+La **información base** del Project. Los agentes **leen** este contexto pero **no lo modifican** — es read-only.
+
+El Contexto se alimenta de 3 fuentes externas + 1 memoria interna:
+
+| Fuente                  | Qué es                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| **Carpeta local**       | Una carpeta en tu ordenador con los archivos base del Project                     |
+| **Links / URLs**        | Referencias a sitios web que aportan contexto                                     |
+| **Google Drive**        | Documentos en la nube                                                             |
+| **Memoria del Project** | Un espacio de memoria reservado donde el agente persiste información entre tareas |
+
+---
+
+## 🔄 Flujo: cómo se ejecuta un Project
+
+```
+Instructions   (system prompt: cómo comportarse)
+    +
+Schedule       (cuándo: bajo demanda o recurrente)
+    +
+Contexto       (qué sabe: fuente de verdad read-only)
+    +
+User prompt    (la acción específica a ejecutar)
+    ↓
+Agentes orquestados trabajan en el entorno virtual
+    ↓
+Output escrito en la ubicación que definiste en Instructions
+```
+
+Las 3 capas del Project se combinan con el **prompt específico de cada tarea** para producir ejecuciones concretas. Las Instructions y el Contexto se mantienen constantes; lo único que cambia entre tareas es el prompt y los outputs.
+
+---
+
+## 🛡️ Contexto ≠ Output
+
+**El contexto no se toca.** Cowork **lee** los archivos de contexto y solo **crea archivos nuevos** en la ubicación de salida que hayas especificado en las Instructions.
+
+Tus documentos base quedan intactos; el Project genera siempre outputs separados, sin riesgo de sobreescribir tu fuente de verdad.
+
+Esto significa que puedes ejecutar una Task 10 veces sobre el mismo Contexto sin preocuparte de erosionar tus archivos originales. Cada ejecución produce outputs en paralelo, nunca mutaciones del contexto.
+
+---
+
+## 🔁 El Task Loop: cómo Cowork ejecuta cada tarea
+
+Hasta acá vimos **dónde vive** el trabajo (el Project). Ahora veamos **cómo se ejecuta** cada tarea dentro de ese Project.
+
+> 📖 **Del curso (Anthropic Academy):** "Claude proposes a plan and waits for your approval before taking action. You adjust if needed, approve, and Claude executes. This is the pattern for every Cowork task."
+
+El **Task Loop** es el ciclo de 4 pasos que Cowork sigue para ejecutar cualquier tarea. Empieza cuando describes lo que necesitas y termina cuando el output final aterriza en tu filesystem.
+
+### ¿Para qué existe como loop y no como ejecución directa?
 
 Porque Cowork es un **agente autónomo** que trabaja sobre archivos, APIs y sistemas reales. Si ejecutara sin alineamiento, correrías riesgos:
 
@@ -45,16 +163,16 @@ El loop te da **puntos de intervención explícitos** antes y durante la ejecuci
 
 ---
 
-## 🔁 Los 4 pasos del loop
+## 🔢 Los 4 pasos del loop
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                                                              │
 │   1. DESCRIBE         2. REVISA PLAN      3. MONITOREA       │
 │   ──────────          ─────────────       (o te vas)         │
-│   qué querés          Cowork arma         ────────────       │
+│   qué quieres         Cowork arma         ────────────       │
 │   de vuelta           plan + hace         Cowork ejecuta,    │
-│         │             preguntas           subagentes          │
+│         │             preguntas           subagentes         │
 │         │             si faltan datos     paralelos          │
 │         ▼                    │                  │            │
 │   [tu prompt]           [alineamiento]    [ejecución]        │
@@ -100,7 +218,7 @@ Tú decides:
 - **Pedir ajustes** ("agrega un PDF además del PowerPoint", "no toques los archivos originales").
 - **Redirigir el approach** completamente.
 
-> ⚠️ **Nota sobre este paso:** el curso a veces lo divide en "paso 2: preguntas" + "paso 3: revisión del plan". En la práctica son parte del mismo **momento de alineamiento pre-ejecución** — Cowork puede hacer ambas cosas antes de arrancar.
+> ⚠️ **Nota sobre este paso:** el curso a veces lo divide en "paso 2: preguntas" + "paso 3: revisar plan". En la práctica son parte del mismo **momento de alineamiento pre-ejecución** — Cowork puede hacer ambas cosas antes de arrancar.
 
 ### Paso 3 — Monitorea o te vas
 
@@ -204,10 +322,10 @@ Ejemplos de intervenciones en vivo:
 
 | Situación                                               | Cómo intervenir                                                      |
 | ------------------------------------------------------- | -------------------------------------------------------------------- |
-| Cowork está usando un archivo que no debería            | "No uses `old-draft.md`, ese ya está obsoleto. Usá `current.md`."    |
-| El approach es correcto pero quieres más detalle        | "Expandí la sección de business case con ROI proyectado a 3 años."   |
-| El output se está desviando del formato esperado        | "Hacé una tabla markdown en vez del texto corrido."                  |
-| Necesitas abortar y replanteárselo                      | "Pará. Cambié de opinión — no queremos PowerPoint, hacé un Notion." |
+| Cowork está usando un archivo que no debería            | "No uses `old-draft.md`, ese ya está obsoleto. Usa `current.md`."    |
+| El approach es correcto pero quieres más detalle        | "Expande la sección de business case con ROI proyectado a 3 años."   |
+| El output se está desviando del formato esperado        | "Haz una tabla markdown en vez del texto corrido."                   |
+| Necesitas abortar y replantearlo                        | "Para. Cambié de opinión — no queremos PowerPoint, haz un Notion."  |
 
 ---
 
@@ -219,7 +337,7 @@ Todo el trabajo ocurre en un **entorno virtual aislado (VM)** dentro de tu compu
 
 | Recurso                      | Condición                                                         |
 | ---------------------------- | ----------------------------------------------------------------- |
-| **Archivos del folder**       | Solo los folders que explícitamente compartiste con Cowork        |
+| **Archivos del folder**       | Solo los folders que explícitamente compartiste con el Project    |
 | **Conectores MCP**           | Solo los que activaste en Customize (Drive, GitHub, Slack, etc.)  |
 | **Internet (si aplica)**      | Solo cuando el Skill o Conector lo requiere                       |
 
@@ -263,7 +381,7 @@ Así se ve el loop en práctica. La estructura es la misma para cualquier tarea 
 
 ### El starting point
 
-Un project folder con la acumulación típica:
+Un Project folder con la acumulación típica:
 
 - Notas de meetings
 - Un checklist
@@ -276,8 +394,8 @@ Un project folder con la acumulación típica:
 ### Paso 1 — Describe
 
 ```
-"Revisá todo en este folder y armá una presentación para leadership
-sobre el tooling review. Incluí los resultados de evaluación de vendors,
+"Revisa todo en este folder y arma una presentación para leadership
+sobre el tooling review. Incluye los resultados de evaluación de vendors,
 timeline, business case y riesgos abiertos. Output en PowerPoint."
 ```
 
@@ -298,7 +416,7 @@ Plan:
 
 Si quieres algo más (un PDF además del pptx, una nota ejecutiva previa, etc.) **lo dices aquí**.
 
-### Paso 3 — Dejalo correr
+### Paso 3 — Déjalo correr
 
 Ves el panel si quieres, o te vas a una reunión. El trabajo sigue.
 
@@ -314,9 +432,9 @@ El deck es un **PowerPoint real**. Los charts son elementos editables — clicke
 
 | ❌ Vago                          | ✅ Específico                                     |
 | ------------------------------- | ------------------------------------------------ |
-| "Limpiá mis archivos."           | "Organizá mi carpeta Downloads por tipo y fecha." |
-| "Hacé un resumen."               | "Resumí los 3 transcripts en una research note de máximo 2 páginas, destacando cambios de assumptions." |
-| "Ayudame con los vendors."       | "Compará los 4 vendors en precio, integraciones y reviews. Output: tabla markdown con recomendación final." |
+| "Limpia mis archivos."           | "Organiza mi carpeta Downloads por tipo y fecha." |
+| "Haz un resumen."                | "Resume los 3 transcripts en una research note de máximo 2 páginas, destacando cambios de assumptions." |
+| "Ayúdame con los vendors."       | "Compara los 4 vendors en precio, integraciones y reviews. Output: tabla markdown con recomendación final." |
 
 ### Dale las 3 piezas clave
 
@@ -349,5 +467,5 @@ Cowork **te preguntará lo que falte**. Empieza con lo que tienes claro y deja q
 
 ## 🔗 Referencias
 
-- [Cómo funciona Claude Cowork](./01-how-cowork-works.md) — arquitectura general del sistema
+- [Cómo funciona Claude Cowork](./01-how-cowork-works.md) — arquitectura general del sistema (Customize, Skills, Conectores, Plugins)
 - [Anthropic Academy — The task loop](https://www.anthropic.com/learn/cowork) — lección oficial del curso
