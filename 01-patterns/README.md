@@ -6,14 +6,15 @@ Cada pattern describe un tipo de problema recurrente y la estructura de Project 
 
 ## Roadmap de patterns
 
-| Pattern                     | Para qué                                                                                       | Complejidad |
-| --------------------------- | ---------------------------------------------------------------------------------------------- | ----------- |
-| **Single-shot automation**  | Project simple: Instructions + 1 tarea `Manual`. Ejemplo: "resume mi inbox"                    | ⭐          |
-| **Recurring delivery**      | Tarea con `Frequency: Daily/Weekly` + conector externo (Slack, email) para reportes recurrentes | ⭐⭐        |
-| **Data → Document pipeline**| Lee contexto (CSV, sheets) → procesa con Skill → escribe output (`.docx`, `.pdf`, `.xlsx`)     | ⭐⭐        |
-| **Knowledge base as context**| Project con Instructions que referencian una carpeta local + links/Drive como contexto read-only | ⭐⭐        |
-| **Multi-agent research**    | Orquestador + subagentes paralelos + agregación final                                          | ⭐⭐⭐      |
-| **Custom MCP integration**  | Conectar un servicio propio vía conector MCP custom y usarlo desde un Project                  | ⭐⭐⭐      |
+| Pattern                                                          | Para qué                                                                                        | Complejidad | Estado |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------- | ------ |
+| [**MCP Secrets Management**](./mcp-secrets-management.md)        | Gestionar tokens y API keys de MCP servers locales sin exponerlos en `claude_desktop_config.json` | ⭐⭐        | ✅     |
+| **Single-shot automation**                                       | Project simple: Instructions + 1 tarea `Manual`. Ejemplo: "resume mi inbox"                     | ⭐          | 🚧     |
+| **Recurring delivery**                                           | Tarea con `Frequency: Daily/Weekly` + conector externo (Slack, email) para reportes recurrentes | ⭐⭐        | 🚧     |
+| **Data → Document pipeline**                                     | Lee contexto (CSV, sheets) → procesa con Skill → escribe output (`.docx`, `.pdf`, `.xlsx`)      | ⭐⭐        | 🚧     |
+| **Knowledge base as context**                                    | Project con Instructions que referencian una carpeta local + links/Drive como contexto read-only | ⭐⭐        | 🚧     |
+| **Multi-agent research**                                         | Orquestador + subagentes paralelos + agregación final                                           | ⭐⭐⭐      | 🚧     |
+| **Custom MCP integration**                                       | Conectar un servicio propio vía conector MCP custom y usarlo desde un Project                   | ⭐⭐⭐      | 🚧     |
 
 ## Estructura de cada pattern
 
