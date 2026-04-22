@@ -467,5 +467,6 @@ Cowork **te preguntará lo que falte**. Empieza con lo que tienes claro y deja q
 
 ## 🔗 Referencias
 
-- [Cómo funciona Claude Cowork](./01-how-cowork-works.md) — arquitectura general del sistema (Customize, Skills, Conectores, Plugins)
+- [Introducción a Cowork](./01-introduccion.md) — qué es Cowork + mapa del cookbook
+- [Customize](./03-customize/) — las herramientas transversales que le agregas al agente (Skills, Conectores, Plugins)
 - [Anthropic Academy — The task loop](https://www.anthropic.com/learn/cowork) — lección oficial del curso
